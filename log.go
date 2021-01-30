@@ -8,7 +8,7 @@ import (
 )
 
 type ZapLogger struct {
-	logger *zap.SugaredLogger
+	logger *zap.Logger
 }
 
 func NewZapLogger() (interfaces.Logger, error) {
@@ -17,36 +17,38 @@ func NewZapLogger() (interfaces.Logger, error) {
 		return nil, err
 	}
 	return &ZapLogger{
-		logger: logger.Sugar(),
+		logger: logger,
 	}, nil
 }
 
-func (logger *ZapLogger) Record(ctx context.Context, level interfaces.LoggerLevel, v ...interface{}) {
+func (logger *ZapLogger) Record(ctx context.Context, depth int, level interfaces.LoggerLevel, v ...interface{}) {
+	log := logger.logger.WithOptions(zap.AddCallerSkip(depth + 1)).Sugar()
 	switch level {
 	case interfaces.LogLevelDebug:
-		logger.logger.Debug(v...)
+		log.Debug(v...)
 	case interfaces.LogLevelInfo:
-		logger.logger.Info(v...)
+		log.Info(v...)
 	case interfaces.LogLevelWarn:
-		logger.logger.Warn(v...)
+		log.Warn(v...)
 	case interfaces.LogLevelError:
-		logger.logger.Error(v...)
+		log.Error(v...)
 	case interfaces.LogLevelFatal:
-		logger.logger.Fatal(v...)
+		log.Fatal(v...)
 	}
 }
 
-func (logger *ZapLogger) Recordf(ctx context.Context, level interfaces.LoggerLevel, format string, v ...interface{}) {
+func (logger *ZapLogger) Recordf(ctx context.Context, depth int, level interfaces.LoggerLevel, format string, v ...interface{}) {
+	log := logger.logger.WithOptions(zap.AddCallerSkip(depth + 1)).Sugar()
 	switch level {
 	case interfaces.LogLevelDebug:
-		logger.logger.Debugf(format, v...)
+		log.Debugf(format, v...)
 	case interfaces.LogLevelInfo:
-		logger.logger.Infof(format, v...)
+		log.Infof(format, v...)
 	case interfaces.LogLevelWarn:
-		logger.logger.Warnf(format, v...)
+		log.Warnf(format, v...)
 	case interfaces.LogLevelError:
-		logger.logger.Errorf(format, v...)
+		log.Errorf(format, v...)
 	case interfaces.LogLevelFatal:
-		logger.logger.Fatalf(format, v...)
+		log.Fatalf(format, v...)
 	}
 }
